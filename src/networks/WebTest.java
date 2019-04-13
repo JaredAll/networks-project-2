@@ -37,11 +37,13 @@ public class WebTest {
     System.out.println("Last-Modified: " + new Date(httpConnection.getLastModified()).toString());
     
     // Printing out http request response
-    System.out.println("Response: " + sendRequest(urlConnection));
+    //System.out.println("Response: " + sendRequest(urlConnection));
     
   }
   
-  public static String sendRequest(URLConnection urlCon) throws IOException {
+  public static String sendRequest(String targetURL) throws IOException {
+    URL url = new URL(targetURL);
+    URLConnection urlCon = url.openConnection();
     BufferedReader in = new BufferedReader(new InputStreamReader(urlCon.getInputStream()));
     String inputLine;
     String response = "";
