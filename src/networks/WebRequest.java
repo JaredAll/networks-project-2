@@ -10,17 +10,20 @@ import java.util.Date;
 
 public class WebRequest {
 
+  // Connection variables
   private String targetURL;
   private URL url;
   private URLConnection urlConnection;
   private HttpURLConnection httpConnection;
   
+  // Information variables
   private String htmlResponse;
   private String lastModified;
   private String ifModifiedSince;
   private int statusCode;
   private boolean connected;
   
+  // Initializing a web request, setting up the connections
   public WebRequest(String targetURL) throws IOException {
     this.targetURL = targetURL;
     this.url = new URL(this.targetURL);
