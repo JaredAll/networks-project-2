@@ -14,6 +14,7 @@ public class Cache {
     m.put("truman.edu", "html doc truman");
     System.out.println(m.containsKey("google.com"));
     System.out.println(m.get("google.com"));
+    System.out.println("Hello I'm just testing git!");
     
     // Code to calculate timestamp to store in timestamp hashmap
     System.out.println(System.currentTimeMillis());
