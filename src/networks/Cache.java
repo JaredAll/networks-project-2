@@ -3,6 +3,7 @@ package networks;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class Cache {
 	
@@ -55,6 +56,18 @@ public class Cache {
 	public void deleteTimeStamp(String URL)
 	{
 		timeMap.remove(URL);
+	}
+	
+	//Gets the size of the webMap
+	public int getWebMapSize()
+	{
+		return webMap.size();
+	}
+	
+	//Gets the keys in the map
+	public Set<String> getWebMapKeys()
+	{
+		return webMap.keySet();
 	}
 	
 	
