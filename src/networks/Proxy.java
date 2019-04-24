@@ -38,7 +38,9 @@ public class Proxy
     		
     		Timer timer = new Timer();
     		long tenMinutes = 600000L;
-    	    timer.scheduleAtFixedRate( RenewProxy, tenMinutes, tenMinutes );
+    		long delay = tenMinutes;
+    		long period = tenMinutes;
+    	    timer.scheduleAtFixedRate( RenewProxy, delay, period );
     	    
     		System.out.println("\nServer initialized.");
 	    	
