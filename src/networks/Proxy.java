@@ -1,6 +1,8 @@
 package networks;
 
 import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService; 
@@ -14,24 +16,39 @@ public class Proxy
     
 		ServerSocket serverSocket = null;
 	    Socket socket = null;
-	    int MAX_T = 10;
+	    int MAX_THREADS = 10;
 				    
 	    try {
 	    	
 	    	// Socket used to listen for new clients
 	    	serverSocket = new ServerSocket( 6969 );
 	    	
-	    	ExecutorService pool = Executors.newFixedThreadPool(MAX_T);
+	    	ExecutorService pool = Executors.newFixedThreadPool(MAX_THREADS);
+	    	
+	    	TimerTask RenewProxy = new TimerTask()
+    		{
+				RequestHandler renewer = new RequestHandler();
+				
+    			public void run()
+    			{
+    				renewer.renewCache();	
+    			}
+    			
+    		};
+    		
+    		Timer timer = new Timer();
+    		long tenMinutes = 600000L;
+    	    timer.scheduleAtFixedRate( RenewProxy, tenMinutes, tenMinutes );
+    	    
+    		System.out.println("\nServer initialized.");
 	    	
 	    	while( true )
-	    	{
-		    	
-	    		System.out.println("\nWaiting for a client...");
-		        
+	    	{   
 	    		// Setting up socket and streams, waits on .accept() until a new client appears
 	    		socket = serverSocket.accept();
 	    		RequestHandler handler = new RequestHandler( socket );
 	    		pool.execute( handler );
+
 	    	}
 	    }
 	    catch( IOException e)
@@ -40,4 +57,6 @@ public class Proxy
 	    }
 	    
 	}
+	
+	
 }

@@ -3,45 +3,43 @@ package networks;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.Set;
 
 public class RequestHandler extends Thread 
 {
-	private static Cache cache;
+	private static Cache cache = new Cache();
 	private Socket socket;
 	
 	public RequestHandler( Socket socket )
 	{
-		
-		cache = new Cache();
 		this.socket = socket;
 	}
 	
-	TimerTask UpdateCache = new TimerTask()
+	public RequestHandler()
 	{
-		public void run()
+		this.socket = null;
+	}
+	
+	
+	public void renewCache()
+	{
+		Set<String> keys = cache.getWebMapKeys();
+		for( String key : keys )
 		{
-			Set<String> keys = cache.getWebMapKeys();
-			for( String key : keys )
+			int notModified = 304;
+			if( webPageStatus( key.split(" ")[1], cache.getTimeStamp( key ) ) != notModified )
 			{
-				int notModified = 304;
-				if( webPageStatus( key.split(" ")[1] ) != notModified )
-				{
-					String response = sendWebRequest( key.split(" ")[1], 0 );
-					cache.updateTimeMap(key, System.currentTimeMillis());
-					cache.updateWebMap(key, response);
-				}
-				else
-				{
-					cache.updateTimeMap( key, System.currentTimeMillis() );
-				}
+				String response = sendWebRequest( key.split(" ")[1], 0 );
+				cache.updateTimeMap(key, System.currentTimeMillis());
+				cache.updateWebMap(key, response);
+			}
+			else
+			{
+				cache.updateTimeMap( key, System.currentTimeMillis() );
 			}
 		}
-	};
+	}
 	
 	public void run()
 	{
@@ -64,11 +62,12 @@ public class RequestHandler extends Thread
 	        inStream.read(b, 0, available);
 	        String request = new String(b);
 	        System.out.println("\n" + request);
-	        
+	       
 	        if( cache.hasWebPage( request ) ) 
 	        {
 	        	String response = cache.getWebPage( request );
 	        	outStream.write( response.getBytes() );
+	        	System.out.println("This was cached.");
 	        	socket.close();
 	        }
 	        else
@@ -89,14 +88,20 @@ public class RequestHandler extends Thread
 	    }
 	}
 	
-	private static int webPageStatus(String targetURL)
+	private static int webPageStatus( String targetURL, long ifModifiedSince )
 	{
 		WebRequest request = null;
 	    try {
 	      request = new WebRequest(targetURL); // Initializing web request
+	      if (ifModifiedSince != 0) {        
+		        request.setIfModifiedSince(ifModifiedSince); // Setting if-modified-since header (pulled from timestamp hashmap)
+		      }
 	      request.connect(); // Start the connection
 	      request.sendRequest(); // Sending http request
 	      // If request status code = 304, no html response update is required, but we should update the timestamp for the request
+	      /*DEBUG*/
+	      System.out.println( "getting status for " + targetURL + "..." );
+	      System.out.println( "Status is " + request.getStatusCode());
 	      return request.getStatusCode();
 	    } 
 	    catch (IOException e) 
@@ -106,7 +111,7 @@ public class RequestHandler extends Thread
 	    }
 	}
 	
-	private static String sendWebRequest(String targetURL, int ifModifiedSince) 
+	private static String sendWebRequest(String targetURL, long ifModifiedSince) 
 	  {
 	    WebRequest request = null;
 	    try {
