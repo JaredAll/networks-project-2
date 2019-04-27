@@ -55,7 +55,7 @@ public class RequestHandler extends Thread
 	    
 	    try {
 	    	
-	        inStream = socket.getInputStream();        
+	    	inStream = socket.getInputStream();        
 	        outStream = socket.getOutputStream();
 	        
 	        // Printing proxy server port and client port

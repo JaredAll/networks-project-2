@@ -11,7 +11,7 @@ import java.util.concurrent.Executors;
 public class Proxy 
 {
   
-	public static void main(String[] args) 
+	public static void main( String[] args ) 
 	{
     
 		ServerSocket serverSocket = null;
@@ -40,7 +40,7 @@ public class Proxy
     		long tenMinutes = 600000L;
     		long delay = tenMinutes;
     		long period = tenMinutes;
-    	    timer.scheduleAtFixedRate( RenewProxy, 30000L, 30000L );
+    	    timer.scheduleAtFixedRate( RenewProxy, tenMinutes, tenMinutes );
     	    
     		System.out.println("\nServer initialized.");
 	    	
