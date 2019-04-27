@@ -40,7 +40,7 @@ public class Proxy
     		long tenMinutes = 600000L;
     		long delay = tenMinutes;
     		long period = tenMinutes;
-    	    timer.scheduleAtFixedRate( RenewProxy, delay, period );
+    	    timer.scheduleAtFixedRate( RenewProxy, 30000L, 30000L );
     	    
     		System.out.println("\nServer initialized.");
 	    	

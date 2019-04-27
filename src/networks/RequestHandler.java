@@ -84,6 +84,7 @@ public class RequestHandler extends Thread
 	        		
 	        	if(  pageStatus == 501)
 	        	{
+	        		System.out.println( "Error code 501; notifying client." );
 	        		response = response501;
 	        	}
 	        	else if( pageStatus == 400 )
@@ -126,7 +127,6 @@ public class RequestHandler extends Thread
 	
 	private static int webPageStatus( String targetURL, long ifModifiedSince )
 	{
-		int error400 = 400;
 		WebRequest request = null;
 	    try {
 	      request = new WebRequest(targetURL); // Initializing web request
@@ -143,8 +143,7 @@ public class RequestHandler extends Thread
 	    } 
 	    catch (IOException e) 
 	    {
-	      //e.printStackTrace();
-	      return error400;
+	      return request.getStatusCode();
 	    }
 	}
 	
