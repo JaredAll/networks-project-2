@@ -1,11 +1,13 @@
 package networks;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.rmi.UnknownHostException;
 import java.util.Date;
 
 public class WebRequest {
@@ -57,13 +59,24 @@ public class WebRequest {
     if (!connected) {
       this.connect();
     }
-    BufferedReader in = new BufferedReader(new InputStreamReader(this.urlConnection.getInputStream()));
-    String inputLine;
-    String response = "";
-    while ((inputLine = in.readLine()) != null) 
-        response += inputLine;
-    in.close();
-    this.htmlResponse = response;
+    try {
+    	BufferedReader in = new BufferedReader(new InputStreamReader(this.urlConnection.getInputStream()));
+    	String inputLine;
+    	String response = "";
+    	while ((inputLine = in.readLine()) != null) 
+    		response += inputLine;
+    	in.close();
+    	this.htmlResponse = response;
+    }
+    catch( FileNotFoundException f )
+    {
+    	f.printStackTrace();
+    }
+    catch( UnknownHostException h )
+    {
+    	h.printStackTrace();
+    	statusCode = 400;
+    }
   }
   
   // Returns the html response

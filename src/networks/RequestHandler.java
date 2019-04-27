@@ -5,15 +5,22 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Set;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.rmi.UnknownHostException;
 
 public class RequestHandler extends Thread 
 {
 	private static Cache cache = new Cache();
 	private Socket socket;
+	private String response501;
+	private String response400;
 	
 	public RequestHandler( Socket socket )
 	{
 		this.socket = socket;
+		response501 = readFile( "501.html" );
+		response400 = readFile( "400.html" );
 	}
 	
 	public RequestHandler()
@@ -61,26 +68,40 @@ public class RequestHandler extends Thread
 	        byte[] b = new byte[available];
 	        inStream.read(b, 0, available);
 	        String request = new String(b);
-	        System.out.println("\n" + request);
+	        System.out.println("\n" + request );
+	        
+	        String response = "";
 	       
 	        if( cache.hasWebPage( request ) ) 
 	        {
-	        	String response = cache.getWebPage( request );
-	        	outStream.write( response.getBytes() );
+	        	response = cache.getWebPage( request );
 	        	System.out.println("This was cached.");
-	        	socket.close();
 	        }
 	        else
-	        {  
-	        	// Retrieving, forwarding, and printing response
-	        	String response = sendWebRequest( request.split(" ")[1], 0 );
-	        	outStream.write( response.getBytes() );
-	        	System.out.println( "\n" + response );
-	        	cache.updateWebMap( request, response );
-	        	cache.updateTimeMap( request, System.currentTimeMillis() );
-	        	socket.close();
-	        	
+	        { 
+	        		
+	        	int pageStatus = webPageStatus( request.split(" ")[1], 0 );
+	        		
+	        	if(  pageStatus == 501)
+	        	{
+	        		response = response501;
+	        	}
+	        	else if( pageStatus == 400 )
+	        	{
+	    	    	System.out.println( "Error Code 400; notifying client.");
+	        		response = response400;
+	        	}
+	        	else
+	        	{
+	        		// Retrieving, forwarding, and printing response
+	        		response = sendWebRequest( request.split(" ")[1], 0 );
+	        		System.out.println( "\n" + response );
+	        		cache.updateWebMap( request, response );
+	        		cache.updateTimeMap( request, System.currentTimeMillis() );
+	        	}	
 	        }
+	        outStream.write( response.getBytes());
+	        socket.close();
 	    } 
 	    catch (IOException io) 
 	    {
@@ -88,13 +109,29 @@ public class RequestHandler extends Thread
 	    }
 	}
 	
+	//This function taken from https://howtodoinjava.com/java/io/java-read-file-to-string-examples/
+	private String readFile( String filePath )
+	{
+		String content = "";
+		try
+		{
+			content = new String ( Files.readAllBytes( Paths.get(filePath) ) );
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		return content;
+	}
+	
 	private static int webPageStatus( String targetURL, long ifModifiedSince )
 	{
+		int error400 = 400;
 		WebRequest request = null;
 	    try {
 	      request = new WebRequest(targetURL); // Initializing web request
 	      if (ifModifiedSince != 0) {        
-		        request.setIfModifiedSince(ifModifiedSince); // Setting if-modified-since header (pulled from timestamp hashmap)
+		        request.setIfModifiedSince( ifModifiedSince ); // Setting if-modified-since header (pulled from timestamp hashmap)
 		      }
 	      request.connect(); // Start the connection
 	      request.sendRequest(); // Sending http request
@@ -106,8 +143,8 @@ public class RequestHandler extends Thread
 	    } 
 	    catch (IOException e) 
 	    {
-	      e.printStackTrace();
-	      return 0;
+	      //e.printStackTrace();
+	      return error400;
 	    }
 	}
 	
